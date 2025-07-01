@@ -1,7 +1,38 @@
 ---
 title: "Massachusets Census"
+execute: 
+  echo: false
+  warning: false
+  message: false
 ---
 
-This is a Quarto website.
+```{r}        
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+library(tidycensus)
+library(tidyverse)
+library(sf)
+```
+
+```{r}
+ma_income <- get_acs(
+  geography = "tract",
+  state = "MA",
+  variables = "B19013_001",
+  year = 2022,               # most recent available
+  geometry = TRUE            # include map geometry (spatial data)
+)
+```
+
+```{r}
+ma_income_clean <- ma_income %>%
+  rename(med_income = estimate) %>%
+  select(GEOID, NAME, med_income, geometry)
+
+# Optional: simple map
+library(ggplot2)
+ggplot(ma_income_clean) +
+  geom_sf(aes(fill = med_income), color = NA, quiet=TRUE) +
+  scale_fill_viridis_c(option = "plasma", na.value = "gray90") +
+  labs(fill = "Median Income", title = "MA Median Household Income by Census Tract") +
+  theme_minimal()
+```
